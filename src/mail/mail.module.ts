@@ -1,10 +1,11 @@
 import { MailerModule } from '@nestjs-modules/mailer';
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { MailerService } from 'src/mailer/mailer.service';
+import { MailService } from './mail.service';
+import { DatabaseModule } from 'src/database/database.module';
 
 @Module({
-    imports:[ConfigModule.forRoot(),MailerModule.forRoot({
+    imports:[ConfigModule.forRoot(),DatabaseModule,MailerModule.forRoot({
         transport:{
             service:'gmail',
             auth:{
@@ -16,7 +17,7 @@ import { MailerService } from 'src/mailer/mailer.service';
             from:'skalewayteam@gmail.com'
         }
     })],
-    exports:[MailerService],
-    providers:[MailerService]
+    exports:[MailService],
+    providers:[MailService]
 })
 export class MailModule {}

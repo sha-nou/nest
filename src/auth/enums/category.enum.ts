@@ -1,0 +1,9 @@
+export enum InvoiceCategory {
+    SALES = 'SALES',
+    EXPENSES = 'EXPENSES',
+    CONTRACTS = 'CONTRACTS',
+    SUBSCRIPTIONS = 'SUBSCRIPTIONS',
+    SERVICES = 'SERVICES',
+    PRODUCTS = 'PRODUCTS',
+    OTHER = 'OTHER',
+  }
