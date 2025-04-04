@@ -1,4 +1,3 @@
-
 import { Injectable, Inject, NotFoundException } from '@nestjs/common';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { DATABASE_CONNECTION } from 'src/database/database.connection';
@@ -8,6 +7,8 @@ import { eq } from 'drizzle-orm';
 import { CreateInvoiceDto, UpdateInvoiceDto } from './dto/createInvoiceDo';
 import { InvoiceCategory } from '../auth/enums/category.enum';
 import { Status } from 'src/auth/enums/status.enum';
+import { join } from 'path';
+import * as fs from 'fs'
 
 @Injectable()
 export class InvoiceService {
@@ -18,13 +19,13 @@ export class InvoiceService {
 
   async createInvoice(createInvoiceDto: CreateInvoiceDto) {
     const { category, ...invoiceData } = createInvoiceDto;
-    
+
     const newinvoice = await this.database
       .insert(schema.invoice)
       .values({
         ...invoiceData,
         category: InvoiceCategory.PRODUCTS,
-        status: Status.Pending, 
+        status: Status.Pending,
         createdAt: new Date(),
       })
       .returning();
@@ -32,8 +33,10 @@ export class InvoiceService {
     return newinvoice;
   }
 
-  async updateInvoice(id: number, updateInvoiceDto: UpdateInvoiceDto) {
-    const existingInvoice = await this.getInvoiceById(id);
+  async updateInvoice(id: string, updateInvoiceDto: UpdateInvoiceDto) {
+    const existingInvoice = await this.database.query.invoice.findFirst({
+      where: (invoice, { eq }) => eq(invoice.id, id),
+    });
     if (!existingInvoice) {
       throw new NotFoundException(`Invoice with ID ${id} not found`);
     }
@@ -41,7 +44,7 @@ export class InvoiceService {
     const [updatedInvoice] = await this.database
       .update(schema.invoice)
       .set(updateInvoiceDto)
-      .where(eq(schema.invoice.id, id))
+      .where(eq(schema.invoice.id, 'id'))
       .returning();
 
     return updatedInvoice;
@@ -55,7 +58,7 @@ export class InvoiceService {
 
     await this.database
       .delete(schema.invoice)
-      .where(eq(schema.invoice.id, id));
+      .where(eq(schema.invoice.id, 'id'));
 
     return { message: `Invoice with ID ${id} deleted successfully` };
   }
@@ -64,7 +67,7 @@ export class InvoiceService {
     const newInvoice = await this.database
       .select()
       .from(schema.invoice)
-      .where(eq(invoice.id,id));
+      .where(eq(invoice.id, 'id'));
 
     return newInvoice;
   }
@@ -87,18 +90,27 @@ export class InvoiceService {
       .where(eq(schema.invoice.status, status));
   }
 
-  async changeInvoiceStatus(id: number, status: Status) {
-    const existingInvoice = await this.getInvoiceById(id);
-    if (!existingInvoice) {
-      throw new NotFoundException(`Invoice with ID ${id} not found`);
-    }
+  // async changeInvoiceStatus(id: number, status: Status) {
+  //   const existingInvoice = await this.getInvoiceById(id);
+  //   if (!existingInvoice) {
+  //     throw new NotFoundException(`Invoice with ID ${id} not found`);
+  //   }
 
-    const [updatedInvoice] = await this.database
-      .update(schema.invoice)
-      .set({ status })
-      .where(eq(invoice.id, id))
-      .returning();
+  //   const [updatedInvoice] = await this.database
+  //     .update(schema.invoice)
+  //     .set({ status })
+  //     .where(eq(invoice.id, id))
+  //     .returning();
 
-    return updatedInvoice;
+  //   return updatedInvoice;
+  // }
+  async uploadTemplate(file:Express.Multer.File){
+    const uploadPath= join(__dirname,'..','uploads',file.filename)
+    fs.writeFileSync(uploadPath,file.buffer)
+    return {message:"Template uploaded successfully",filePath:uploadPath}
+  }
+
+  async bulkGenerate() {
+    
   }
 }

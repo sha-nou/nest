@@ -8,10 +8,12 @@ import { InvoiceService } from './invoice/invoice.service';
 import { UsersService } from './users/users.service';
 import { AuthModule } from './auth/auth.module';
 import { DatabaseModule } from './database/database.module';
+import { InvoiceController } from './invoice/invoice.controller';
+import { UsersController } from './users/users.controller';
 
 @Module({
   imports: [ MailModule,ConfigModule.forRoot({isGlobal:true}), AuthModule, DatabaseModule],
-  controllers: [AppController],
+  controllers: [AppController, InvoiceController, UsersController],
   providers: [AppService, MailService, InvoiceService, UsersService],
 })
 export class AppModule {}

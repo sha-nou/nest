@@ -3,6 +3,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { MailService } from './mail.service';
 import { DatabaseModule } from 'src/database/database.module';
+import { MailController } from './mail.controller';
 
 @Module({
     imports:[ConfigModule.forRoot(),DatabaseModule,MailerModule.forRoot({
@@ -18,6 +19,7 @@ import { DatabaseModule } from 'src/database/database.module';
         }
     })],
     exports:[MailService],
-    providers:[MailService]
+    providers:[MailService],
+    controllers: [MailController]
 })
 export class MailModule {}
