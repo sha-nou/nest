@@ -10,9 +10,10 @@ import { AuthModule } from './auth/auth.module';
 import { DatabaseModule } from './database/database.module';
 import { InvoiceController } from './invoice/invoice.controller';
 import { UsersController } from './users/users.controller';
+import { InvoiceModule } from './invoice/invoice.module';
 
 @Module({
-  imports: [ MailModule,ConfigModule.forRoot({isGlobal:true}), AuthModule, DatabaseModule],
+  imports: [ MailModule,ConfigModule.forRoot({isGlobal:true}), AuthModule, DatabaseModule, InvoiceModule],
   controllers: [AppController, InvoiceController, UsersController],
   providers: [AppService, MailService, InvoiceService, UsersService],
 })

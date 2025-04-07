@@ -1,4 +1,4 @@
-import { Injectable, Inject, NotFoundException } from '@nestjs/common';
+import { Injectable, Inject, NotFoundException, Body } from '@nestjs/common';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { DATABASE_CONNECTION } from 'src/database/database.connection';
 import * as schema from '../users/schema';
@@ -8,7 +8,9 @@ import { CreateInvoiceDto, UpdateInvoiceDto } from './dto/createInvoiceDo';
 import { InvoiceCategory } from '../auth/enums/category.enum';
 import { Status } from 'src/auth/enums/status.enum';
 import { join } from 'path';
-import * as fs from 'fs'
+import * as fs from 'fs'  
+import * as PDFDocument from 'pdfkit'
+import { Response } from 'express';
 
 @Injectable()
 export class InvoiceService {
@@ -24,9 +26,9 @@ export class InvoiceService {
       .insert(schema.invoice)
       .values({
         ...invoiceData,
-        category: InvoiceCategory.PRODUCTS,
         status: Status.Pending,
         createdAt: new Date(),
+        id: String(invoiceData.id), // Ensure id is a string
       })
       .returning();
 
@@ -105,12 +107,45 @@ export class InvoiceService {
   //   return updatedInvoice;
   // }
   async uploadTemplate(file:Express.Multer.File){
-    const uploadPath= join(__dirname,'..','uploads',file.filename)
+    const uploadDir= join(__dirname,'..','uploads')
+    if(fs.existsSync(uploadDir)){
+      fs.mkdirSync(uploadDir,{recursive:true})
+    }
+    const uploadPath= join(uploadDir,file.filename)
     fs.writeFileSync(uploadPath,file.buffer)
     return {message:"Template uploaded successfully",filePath:uploadPath}
   }
 
   async bulkGenerate() {
-    
+    try {
+      const invoices = await this.database.select().from(schema.invoice);
+      const bulkInvoices = invoices.map((invoice) => {
+        return {
+          ...invoice,
+          status: Status.Pending,
+          createdAt: new Date(),
+        };
+      });
+      await this.database.insert(schema.invoice).values(bulkInvoices);
+
+    } catch (error) {
+      
+    }
+  }
+  async pdfGenerate( @Body() invoice: CreateInvoiceDto, response: Response) {
+    const doc = new PDFDocument()
+    response.setHeader('Content-Type', 'application/pdf');
+    response.setHeader('Content-Disposition', `attachment; filename=invoice-${invoice.id}.pdf`);
+
+    doc.pipe(response);
+
+    doc.fontSize(25).text('Invoice',{align:'center'})
+    doc.moveDown();
+
+    doc.text(`invoice ID: ${invoice.id}`,100,120)
+    doc.text(`Amount: ${invoice.amount}`,100,160)
+    doc.text(`Category: ${invoice.category}`,100,200)
+    doc.text(`Issue Date: ${invoice.issueDate}`,100,240)
+    doc.end()
   }
 }

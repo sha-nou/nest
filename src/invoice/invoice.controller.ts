@@ -10,6 +10,7 @@ import {
   UseGuards,
   UseInterceptors,
   UploadedFile,
+  Res,
 } from '@nestjs/common';
 import { InvoiceService } from './invoice.service';
 import { CreateInvoiceDto, UpdateInvoiceDto } from './dto/createInvoiceDo';
@@ -66,5 +67,5 @@ export class InvoiceController {
   upload(@UploadedFile() file:Express.Multer.File){
     return this.invoiceService.uploadTemplate(file)
   }
-
+ 
 }

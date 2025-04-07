@@ -4,6 +4,9 @@ import { IsEnum, IsNumber, IsDateString, IsOptional } from 'class-validator';
 
 export class CreateInvoiceDto {
   @IsNumber()
+  id:number
+
+  @IsNumber()
   amount: number;
 
   @IsEnum(InvoiceCategory)
@@ -24,6 +27,8 @@ export class CreateInvoiceDto {
 
   @IsOptional()
   description?: string;
+
+  
 }
 
 export class UpdateInvoiceDto {
