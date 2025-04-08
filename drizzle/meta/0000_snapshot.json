@@ -1,18 +1,19 @@
 {
-  "id": "82e7f555-1d24-47d3-8b8e-13aba37781e0",
+  "id": "e2135939-64eb-4bec-80eb-29dc762717f4",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
-    "public.businisess": {
-      "name": "businisess",
+    "public.business": {
+      "name": "business",
       "schema": "",
       "columns": {
         "id": {
           "name": "id",
           "type": "uuid",
           "primaryKey": true,
-          "notNull": true
+          "notNull": true,
+          "default": "gen_random_uuid()"
         },
         "name": {
           "name": "name",
@@ -130,17 +131,17 @@
         },
         "total_Amount": {
           "name": "total_Amount",
-          "type": "integer",
+          "type": "numeric",
           "primaryKey": false,
           "notNull": false
         }
       },
       "indexes": {},
       "foreignKeys": {
-        "invoice_business_id_businisess_id_fk": {
-          "name": "invoice_business_id_businisess_id_fk",
+        "invoice_business_id_business_id_fk": {
+          "name": "invoice_business_id_business_id_fk",
           "tableFrom": "invoice",
-          "tableTo": "businisess",
+          "tableTo": "business",
           "columnsFrom": [
             "business_id"
           ],
@@ -170,6 +171,59 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
+    "public.members": {
+      "name": "members",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "business_id": {
+          "name": "business_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "role": {
+          "name": "role",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "members_business_id_business_id_fk": {
+          "name": "members_business_id_business_id_fk",
+          "tableFrom": "members",
+          "tableTo": "business",
+          "columnsFrom": [
+            "business_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
     "public.users": {
       "name": "users",
       "schema": "",
@@ -178,7 +232,8 @@
           "name": "id",
           "type": "uuid",
           "primaryKey": true,
-          "notNull": true
+          "notNull": true,
+          "default": "gen_random_uuid()"
         },
         "username": {
           "name": "username",

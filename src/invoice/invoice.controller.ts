@@ -19,10 +19,9 @@ import { Role } from 'src/auth/decorators/roles.decorator';
 import { Roles } from 'src/auth/enums/roles.enum';
 import { InvoiceCategory } from 'src/auth/enums/category.enum';
 import { FileInterceptor } from '@nestjs/platform-express';
-// import { business } from 'src/users/schema';
 
 @Controller('invoice')
-export class InvoiceController {
+export class InvoiceController { 
   constructor(private readonly invoiceService: InvoiceService) {}
 
   @Post()
@@ -38,7 +37,7 @@ export class InvoiceController {
 
   @Put(':id')
   @Role(Roles.Admin, Roles.Accountant)
-  update(@Param('id') id: string, @Body() updateInvoiceDto: UpdateInvoiceDto) {
+  update(@Param('id') id: number, @Body() updateInvoiceDto: UpdateInvoiceDto) {
     return this.invoiceService.updateInvoice(id, updateInvoiceDto);
   }
 
@@ -52,20 +51,18 @@ export class InvoiceController {
     return this.invoiceService.getInvoicesByStatus(status);
   }
 
-  //     @Put(':id/status')
-  //     @Role(Roles.Admin, Roles.Accountant)
-  //     updateStatus(@Param('id') id: string, @Query('status') status: Status) {
-  //       return this.invoiceService.changeInvoiceStatus(id, status);
-  //     }
-  //   }
+  @Put(':id/status')
+  @Role(Roles.Admin, Roles.Accountant)
+  updateStatus(@Param('id') id: number, @Query('status') status: Status) {
+    return this.invoiceService.changeInvoiceStatus(id, status);
+  }
   @Get('cat/:category')
   findByCategory(@Param('category') category: InvoiceCategory) {
-    return this.invoiceService.getInvoicesByCategory(category)
+    return this.invoiceService.getInvoicesByCategory(category);
   }
   @Post('upload-template')
   @UseInterceptors(FileInterceptor('file'))
-  upload(@UploadedFile() file:Express.Multer.File){
-    return this.invoiceService.uploadTemplate(file)
+  upload(@UploadedFile() file: Express.Multer.File) {
+    return this.invoiceService.uploadTemplate(file);
   }
- 
 }

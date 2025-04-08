@@ -19,7 +19,7 @@ export const business= pgTable('business',{
 })
 
 export const invoice=pgTable('invoice',{
-    id:uuid('id').primaryKey().defaultRandom(),
+    id:serial('id').primaryKey(),
     invoice_number:varchar('invoice_number'),
     business_id:uuid('business_id').references(()=>business.id),
     user_id:uuid('user_id').references(()=>users.id),

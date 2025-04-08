@@ -27,18 +27,14 @@ export class InvoiceService {
       .values({
         ...invoiceData,
         status: Status.Pending,
-        createdAt: new Date(),
-        id: String(invoiceData.id), // Ensure id is a string
+        createdAt: new Date()
       })
-      .returning();
 
     return newinvoice;
   }
 
-  async updateInvoice(id: string, updateInvoiceDto: UpdateInvoiceDto) {
-    const existingInvoice = await this.database.query.invoice.findFirst({
-      where: (invoice, { eq }) => eq(invoice.id, id),
-    });
+  async updateInvoice(id: number, updateInvoiceDto: UpdateInvoiceDto) {
+    const existingInvoice = await this.database.select().from(invoice).where(eq(invoice.id, id))
     if (!existingInvoice) {
       throw new NotFoundException(`Invoice with ID ${id} not found`);
     }
@@ -46,11 +42,13 @@ export class InvoiceService {
     const [updatedInvoice] = await this.database
       .update(schema.invoice)
       .set(updateInvoiceDto)
-      .where(eq(schema.invoice.id, 'id'))
+      .where(eq(schema.invoice.id, id))
       .returning();
 
-    return updatedInvoice;
+    return {message:'Update successfull',updatedInvoice};
   }
+
+
 
   async deleteInvoice(id: number) {
     const existingInvoice = await this.getInvoiceById(id);
@@ -60,7 +58,7 @@ export class InvoiceService {
 
     await this.database
       .delete(schema.invoice)
-      .where(eq(schema.invoice.id, 'id'));
+      .where(eq(schema.invoice.id, id));
 
     return { message: `Invoice with ID ${id} deleted successfully` };
   }
@@ -69,7 +67,7 @@ export class InvoiceService {
     const newInvoice = await this.database
       .select()
       .from(schema.invoice)
-      .where(eq(invoice.id, 'id'));
+      .where(eq(invoice.id, id));
 
     return newInvoice;
   }
@@ -92,20 +90,20 @@ export class InvoiceService {
       .where(eq(schema.invoice.status, status));
   }
 
-  // async changeInvoiceStatus(id: number, status: Status) {
-  //   const existingInvoice = await this.getInvoiceById(id);
-  //   if (!existingInvoice) {
-  //     throw new NotFoundException(`Invoice with ID ${id} not found`);
-  //   }
+  async changeInvoiceStatus(id: number, status: Status) {
+    const existingInvoice = await this.getInvoiceById(id);
+    if (!existingInvoice) {
+      throw new NotFoundException(`Invoice with ID ${id} not found`);
+    }
 
-  //   const [updatedInvoice] = await this.database
-  //     .update(schema.invoice)
-  //     .set({ status })
-  //     .where(eq(invoice.id, id))
-  //     .returning();
+    const [updatedInvoice] = await this.database
+      .update(schema.invoice)
+      .set({ status })
+      .where(eq(invoice.id, id))
+      .returning();
 
-  //   return updatedInvoice;
-  // }
+    return updatedInvoice;
+  }
   async uploadTemplate(file:Express.Multer.File){
     const uploadDir= join(__dirname,'..','uploads')
     if(fs.existsSync(uploadDir)){
