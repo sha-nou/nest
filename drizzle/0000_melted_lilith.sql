@@ -3,13 +3,16 @@ CREATE TABLE "business" (
 	"name" varchar,
 	"location" varchar,
 	"email" varchar,
-	"created_at" timestamp DEFAULT now() NOT NULL
+	"created_at" timestamp DEFAULT now() NOT NULL,
+	CONSTRAINT "business_id_unique" UNIQUE("id"),
+	CONSTRAINT "business_email_unique" UNIQUE("email")
 );
 --> statement-breakpoint
 CREATE TABLE "invoice" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"invoice_number" varchar,
 	"business_id" uuid,
+	"business_email" varchar,
 	"user_id" uuid,
 	"Price" integer,
 	"category" varchar DEFAULT 'PRODUCTS' NOT NULL,
@@ -38,5 +41,6 @@ CREATE TABLE "users" (
 );
 --> statement-breakpoint
 ALTER TABLE "invoice" ADD CONSTRAINT "invoice_business_id_business_id_fk" FOREIGN KEY ("business_id") REFERENCES "public"."business"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "invoice" ADD CONSTRAINT "invoice_business_email_business_email_fk" FOREIGN KEY ("business_email") REFERENCES "public"."business"("email") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "invoice" ADD CONSTRAINT "invoice_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "members" ADD CONSTRAINT "members_business_id_business_id_fk" FOREIGN KEY ("business_id") REFERENCES "public"."business"("id") ON DELETE no action ON UPDATE no action;

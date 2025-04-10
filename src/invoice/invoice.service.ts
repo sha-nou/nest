@@ -1,6 +1,6 @@
 import { Injectable, Inject, NotFoundException, Body } from '@nestjs/common';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
-import { DATABASE_CONNECTION } from 'src/database/database.connection';
+import { DATABASE_CONNECTION } from '../database/database.connection';
 import * as schema from '../users/schema';
 import { invoice } from '../users/schema';
 import { eq } from 'drizzle-orm';
@@ -27,14 +27,14 @@ export class InvoiceService {
       .values({
         ...invoiceData,
         status: Status.Pending,
-        createdAt: new Date()
+        createdAt: new Date(),
       })
 
     return newinvoice;
   }
 
   async updateInvoice(id: number, updateInvoiceDto: UpdateInvoiceDto) {
-    const existingInvoice = await this.database.select().from(invoice).where(eq(invoice.id, id))
+    const existingInvoice = await this.database.select().from(invoice).where(eq(invoice.id, id.toString()))
     if (!existingInvoice) {
       throw new NotFoundException(`Invoice with ID ${id} not found`);
     }
@@ -42,7 +42,7 @@ export class InvoiceService {
     const [updatedInvoice] = await this.database
       .update(schema.invoice)
       .set(updateInvoiceDto)
-      .where(eq(schema.invoice.id, id))
+      .where(eq(schema.invoice.id, 'id'))
       .returning();
 
     return {message:'Update successfull',updatedInvoice};
@@ -58,7 +58,7 @@ export class InvoiceService {
 
     await this.database
       .delete(schema.invoice)
-      .where(eq(schema.invoice.id, id));
+      .where(eq(schema.invoice.id, id.toString()));
 
     return { message: `Invoice with ID ${id} deleted successfully` };
   }
@@ -67,7 +67,7 @@ export class InvoiceService {
     const newInvoice = await this.database
       .select()
       .from(schema.invoice)
-      .where(eq(invoice.id, id));
+      .where(eq(invoice.id, id.toString()));
 
     return newInvoice;
   }
@@ -99,7 +99,7 @@ export class InvoiceService {
     const [updatedInvoice] = await this.database
       .update(schema.invoice)
       .set({ status })
-      .where(eq(invoice.id, id))
+      .where(eq(invoice.id, id.toString()))
       .returning();
 
     return updatedInvoice;
@@ -131,19 +131,22 @@ export class InvoiceService {
     }
   }
   async pdfGenerate( @Body() invoice: CreateInvoiceDto, response: Response) {
-    const doc = new PDFDocument()
+    const doc = new PDFDocument({
+      lang: 'en-US',
+    })
     response.setHeader('Content-Type', 'application/pdf');
     response.setHeader('Content-Disposition', `attachment; filename=invoice-${invoice.id}.pdf`);
 
     doc.pipe(response);
 
     doc.fontSize(25).text('Invoice',{align:'center'})
-    doc.moveDown();
+    doc.moveDown()
 
     doc.text(`invoice ID: ${invoice.id}`,100,120)
     doc.text(`Amount: ${invoice.amount}`,100,160)
     doc.text(`Category: ${invoice.category}`,100,200)
     doc.text(`Issue Date: ${invoice.issueDate}`,100,240)
+    doc.pipe(fs.createWriteStream('invoice.pdf'))
     doc.end()
   }
 }

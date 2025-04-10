@@ -1,5 +1,5 @@
 {
-  "id": "e2135939-64eb-4bec-80eb-29dc762717f4",
+  "id": "3d626992-7870-4244-9f2a-cd55f9a786b4",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -44,7 +44,22 @@
       "indexes": {},
       "foreignKeys": {},
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
+      "uniqueConstraints": {
+        "business_id_unique": {
+          "name": "business_id_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "id"
+          ]
+        },
+        "business_email_unique": {
+          "name": "business_email_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "email"
+          ]
+        }
+      },
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
@@ -68,6 +83,12 @@
         "business_id": {
           "name": "business_id",
           "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "business_email": {
+          "name": "business_email",
+          "type": "varchar",
           "primaryKey": false,
           "notNull": false
         },
@@ -147,6 +168,19 @@
           ],
           "columnsTo": [
             "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "invoice_business_email_business_email_fk": {
+          "name": "invoice_business_email_business_email_fk",
+          "tableFrom": "invoice",
+          "tableTo": "business",
+          "columnsFrom": [
+            "business_email"
+          ],
+          "columnsTo": [
+            "email"
           ],
           "onDelete": "no action",
           "onUpdate": "no action"

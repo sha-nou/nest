@@ -1,25 +1,26 @@
-import { InvoiceCategory } from 'src/auth/enums/category.enum';
+
+import { IsEnum, IsNumber, IsDateString, IsOptional, IsNotEmpty } from 'class-validator';
+import { InvoiceCategory } from 'src/./auth/enums/category.enum';
 import { Status } from 'src/auth/enums/status.enum';
-import { IsEnum, IsNumber, IsDateString, IsOptional } from 'class-validator';
 
 export class CreateInvoiceDto {
   @IsNumber()
-  id:number
+  id:string
 
   @IsNumber()
   amount: number;
 
   @IsEnum(InvoiceCategory)
-  category: InvoiceCategory;
+  category: string;
 
   @IsDateString()
-  issueDate: string;
+  issueDate?: string;
 
   @IsDateString()
   dueDate: string;
 
-  @IsNumber()
-  userId: number;
+  @IsNotEmpty()
+  businessId: string;
 
   @IsOptional()
   @IsNumber()
@@ -46,7 +47,7 @@ export class UpdateInvoiceDto {
 
   @IsOptional()
   @IsEnum(Status)
-  status?: Status;
+  status?: string;
 
   @IsOptional()
   @IsNumber()

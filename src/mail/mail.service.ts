@@ -1,13 +1,13 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { MailerService } from '@nestjs-modules/mailer';
 import * as crypto from 'crypto';
-import { DATABASE_CONNECTION } from 'src/database/database.connection';
+import { DATABASE_CONNECTION } from '../database/database.connection';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import * as schema from '../users/schema';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { and, eq, gte, lt } from 'drizzle-orm';
 import { addDays, format } from 'date-fns';
-import { Status } from 'src/auth/enums/status.enum';
+import { Status } from '../auth/enums/status.enum';
 
 export type MailInfo = {
   to: string;
@@ -42,11 +42,14 @@ export class MailService {
       .select({
         id: schema.invoice.id,
         dueDate: schema.invoice.dueDate,
-        email: schema.business.email,
+        email: schema.invoice.business_email,
         name: schema.business.business_name,
       })
       .from(schema.invoice)
-      .innerJoin(schema.business, eq(schema.invoice.business_id, schema.business.id))
+      .innerJoin(
+        schema.business,
+        eq(schema.invoice.business_id, schema.business.id),
+      )
       .where(
         and(
           eq(schema.invoice.status, Status.Pending),
@@ -56,34 +59,35 @@ export class MailService {
       )
       .execute();
     for (const invoice of unpaidInvoices) {
-    const daysLeft = invoice.dueDate
+      const daysLeft = invoice.dueDate
         ? Math.ceil(
             (new Date(invoice.dueDate).getTime() - today.getTime()) /
               (1000 * 60 * 60 * 24),
           )
         : 0;
-        console.log('Unpaid invoices:', unpaidInvoices,daysLeft);
+      console.log('Unpaid invoices:', unpaidInvoices, daysLeft);
 
-      await this.mailerService.sendMail({
-        to:"njingtishanelle103@gmail.com",
+    const result=  await this.mailerService.sendMail({
+        to: 'njingtishanelle103@gmail.com',
         from: process.env.EMAIL_USER,
         subject: 'Invoice Reminder',
-        text: `Hello ${schema.business.business_name},\n\nJust a reminder that your invoice (ID: ${schema.invoice.id}) is due in ${daysLeft} days.\n\nPlease ensure payment before the due date to avoid any late fees.\n\nThank you!`,
-      })
+        text: `Hello ${schema.business.business_name},\n\nJust a reminder that your invoice (ID: ${schema.invoice.id}) is due 
+        in ${daysLeft} days.\n\nPlease ensure payment before the due date to avoid any late fees.\n\nThank you!`,
+      });
+      return {message:"sent",result}
     }
-
+   
   }
-  async sendEmail({ to, subject,text }: MailInfo) {
+  async sendEmail({ to, subject, text }: MailInfo) {
     // const otp = crypto.randomInt(100000, 999999).toString();
     // console.log('Generated OTP:', otp);
     // this.otpStore[to] = otp;
-
     try {
       await this.mailerService.sendMail({
-        to: to,
+        to,
         from: process.env.EMAIL_USER,
-        subject: subject,
-        text: text || `Your secret code is otp`,
+        subject,
+        text
       });
       return {
         status: 200,

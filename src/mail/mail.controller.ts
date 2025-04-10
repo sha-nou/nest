@@ -25,7 +25,7 @@ getReminders(){
     return this.mailService.generateReminder()
 }
 @Post('generate-reminder')
-generateReminder(@Body() sendEmail:MailInfo) {
+generateReminder() {
     return this.mailService.generateReminder();
   }
 }

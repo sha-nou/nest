@@ -12,6 +12,7 @@ import {
   UploadedFile,
   Res,
 } from '@nestjs/common';
+import { Response } from 'express';
 import { InvoiceService } from './invoice.service';
 import { CreateInvoiceDto, UpdateInvoiceDto } from './dto/createInvoiceDo';
 import { Status } from '../auth/enums/status.enum';
@@ -37,8 +38,8 @@ export class InvoiceController {
 
   @Put(':id')
   @Role(Roles.Admin, Roles.Accountant)
-  update(@Param('id') id: number, @Body() updateInvoiceDto: UpdateInvoiceDto) {
-    return this.invoiceService.updateInvoice(id, updateInvoiceDto);
+  update(@Param('id') id: string, @Body() updateInvoiceDto: UpdateInvoiceDto) {
+    return this.invoiceService.updateInvoice(Number(id), updateInvoiceDto);
   }
 
   @Delete(':id')
@@ -60,9 +61,19 @@ export class InvoiceController {
   findByCategory(@Param('category') category: InvoiceCategory) {
     return this.invoiceService.getInvoicesByCategory(category);
   }
-  @Post('upload-template')
+  // @Post('upload-template')
+  // @UseInterceptors(FileInterceptor('file'))
+  // upload(@UploadedFile() file: Express.Multer.File) {
+  //   return this.invoiceService.uploadTemplate(file);
+  // }
+  
+  @Post('generate-pdf')
   @UseInterceptors(FileInterceptor('file'))
-  upload(@UploadedFile() file: Express.Multer.File) {
-    return this.invoiceService.uploadTemplate(file);
+  generatePdf(@UploadedFile() file: Express.Multer.File, @Res() res: Response) {
+    if(!file){
+      return res.status(400).json({ message: 'No file uploaded' });
+    }
+    const invoiceData: CreateInvoiceDto = JSON.parse(file.buffer.toString());
+    return this.invoiceService.pdfGenerate(invoiceData, res );
   }
 }
